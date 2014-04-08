@@ -13,7 +13,7 @@ Using the pre-built image
 Pull down the image and run it:
 
     docker pull robsyme/webapollo
-    docker run -d robsyme/webapollo p 80:8080
+    docker run -d robsyme/webapollo -p 80:8080
 
 Using the Dockerfile
 --------------------
