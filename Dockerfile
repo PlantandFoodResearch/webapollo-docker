@@ -18,7 +18,7 @@ RUN perl /tmp/install_cpanm.pl --sudo App::cpanminus && rm /tmp/install_cpanm.pl
 
 # Install perl WebApollo dependencies
 RUN apt-get install -qqy tomcat7 bioperl postgresql-9.1 vim tree
-RUN cpanm YAML JSON JSON::XS PerlIO::gzip Heap::Simple Heap::Simple::XS Hash::Merge Bio::GFF3::LowLevel::Parser Digest::Crc32 Cache::Ref::FIFO Devel::Size File::Next
+RUN cpanm YAML JSON JSON::XS PerlIO::gzip Heap::Simple Heap::Simple::XS Hash::Merge Bio::GFF3::LowLevel::Parser Digest::Crc32 Cache::Ref::FIFO Devel::Size
 
 
 # Install blat
@@ -45,10 +45,9 @@ ENV WEB_APOLLO_DB web_apollo_users
 ENV WEB_APOLLO_DB_USER web_apollo_users_admin
 ENV WEB_APOLLO_DB_PASS AdminDatabasePassword
 
-#RUN echo "localhost:*:*:$WEB_APOLLO_DB_USER:$WEB_APOLLO_DB_PASS" > ~/.pgpass && chmod 600 ~/.pgpass
-RUN wget http://genomearchitect.org/webapollo/releases/WebApollo-2014-04-03.tgz && \
+RUN wget http://icebox.lbl.gov/webapollo/releases/previous_releases/WebApollo-2013-11-22.tgz && \
    tar -xzf WebApollo*.tgz -C /opt && \
-   mv /opt/WebApollo-2014-04-03 $WEB_APOLLO_DIR && \
+   mv /opt/WebApollo-2013-11-22 $WEB_APOLLO_DIR && \
    rm ./*.tgz
 
 RUN mkdir $WEB_APOLLO_SAMPLE_DIR
