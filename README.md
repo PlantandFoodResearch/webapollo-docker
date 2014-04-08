@@ -4,7 +4,7 @@ webapollo-docker
 Introduction
 ------------
 
-This Dockerfile template (and associated scripts) can be used to help groups set up their own webapollo instances, running as isolated docker containers.
+I (robsyme) use this Dockerfile template to generate our WebApollo instance. Some of the commands are specific to our setup, so this should be taken as a guide only. This Dockerfile template (and associated scripts) can be used to help groups set up their own webapollo instances, running as isolated docker containers.
 
 
 Using the pre-built image

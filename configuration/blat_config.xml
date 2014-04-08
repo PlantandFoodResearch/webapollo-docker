@@ -11,7 +11,7 @@
 	<tmp_dir>/data/webapollo/blat/tmp</tmp_dir>
 
 	<!-- path to Blat database -->
-	<database>/data/webapollo/blat/db/pyu.2bit</database>
+	<database>/data/webapollo/blat/db/refseqs.2bit</database>
 
 	<!-- any Blat options (directly passed to Blat) e.g., -minMatch -->
 	<blat_options>-minScore=100 -minIdentity=60</blat_options>

@@ -65,7 +65,7 @@
 		<annotation_track_name>Annotations</annotation_track_name>
 
 	 	<!-- organism being annotated -->
-		<organism>Pythium ultimum</organism>
+		<organism>Parastagonospora nodorum SN15</organism>
 
 		<!-- CV term for the genomic sequences - should be in the form
 		of "CV:term".  This applies to all sequences -->

@@ -31,7 +31,6 @@ RUN mkdir -p /usr/share/tomcat7/common/classes /usr/share/tomcat7/server/classes
 RUN echo "export CATALINA_OPTS='-Xms512m -Xmx1g -XX:+CMSClassUnloadingEnabled -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:MaxPermSize=256m'" >> /usr/share/tomcat7/bin/setenv.sh
 
 ENV WEB_APOLLO_DIR /opt/webapollo
-ENV WEB_APOLLO_SAMPLE_DIR /opt/webapollo/sample_data
 ENV WEB_APOLLO_DATA_DIR /data/webapollo/annotations
 ENV JBROWSE_DATA_DIR /data/webapollo/jbrowse/data
 ENV TOMCAT_LIB_DIR /usr/share/tomcat7/lib
@@ -45,17 +44,15 @@ ENV WEB_APOLLO_DB web_apollo_users
 ENV WEB_APOLLO_DB_USER web_apollo_users_admin
 ENV WEB_APOLLO_DB_PASS AdminDatabasePassword
 
-#RUN echo "localhost:*:*:$WEB_APOLLO_DB_USER:$WEB_APOLLO_DB_PASS" > ~/.pgpass && chmod 600 ~/.pgpass
-RUN wget http://genomearchitect.org/webapollo/releases/WebApollo-2014-04-03.tgz && \
+RUN wget http://icebox.lbl.gov/webapollo/releases/previous_releases/WebApollo-2013-11-22.tgz && \
    tar -xzf WebApollo*.tgz -C /opt && \
-   mv /opt/WebApollo-2014-04-03 $WEB_APOLLO_DIR && \
+   mv /opt/WebApollo-2013-11-22 $WEB_APOLLO_DIR && \
    rm ./*.tgz
 
-RUN mkdir $WEB_APOLLO_SAMPLE_DIR
-WORKDIR /opt/webapollo/sample_data
-RUN wget http://icebox.lbl.gov/webapollo/data/pyu_data.tgz && \
-   tar -xzf pyu_data.tgz && \
-   $WEB_APOLLO_DIR/tools/user/extract_seqids_from_fasta.pl -p Annotations- -i $WEB_APOLLO_SAMPLE_DIR/pyu_data/scf1117875582023.fa -o /tmp/seqids.txt
+ADD data/refseqs.fasta.gz /tmp/refseqs.fasta.gz
+RUN cd /tmp && \
+    gunzip refseqs.fasta.gz && \
+    $WEB_APOLLO_DIR/tools/user/extract_seqids_from_fasta.pl -p Annotations- -i /tmp/refseqs.fasta -o /tmp/seqids.txt
 
 ADD configuration/pg_hba.conf /etc/postgresql/9.1/main/pg_hba.conf
 
@@ -67,8 +64,14 @@ RUN /etc/init.d/postgresql start && \
    psql --username postgres --host localhost --command "CREATE DATABASE $WEB_APOLLO_DB OWNER $WEB_APOLLO_DB_USER;" && \
    psql --username $WEB_APOLLO_DB_USER --dbname $WEB_APOLLO_DB < $WEB_APOLLO_DIR/tools/user/user_database_postgresql.sql && \
    psql --username postgres --host localhost --dbname $WEB_APOLLO_DB --command "INSERT INTO users(username, password) VALUES('web_apollo_admin', 'web_apollo_admin');" && \
+   psql --username postgres --host localhost --dbname $WEB_APOLLO_DB --command "INSERT INTO users(username, password) VALUES('rob', 'rob');" && \
+   psql --username postgres --host localhost --dbname $WEB_APOLLO_DB --command "INSERT INTO users(username, password) VALUES('richard', 'richard');" && \
+   psql --username postgres --host localhost --dbname $WEB_APOLLO_DB --command "INSERT INTO users(username, password) VALUES('james', 'james');" && \
    $WEB_APOLLO_DIR/tools/user/add_tracks.pl -D $WEB_APOLLO_DB -U $WEB_APOLLO_DB_USER -P $WEB_APOLLO_DB_PASS -t /tmp/seqids.txt && \
-   $WEB_APOLLO_DIR/tools/user/set_track_permissions.pl -D $WEB_APOLLO_DB -U $WEB_APOLLO_DB_USER -P $WEB_APOLLO_DB_PASS -u web_apollo_admin -t /tmp/seqids.txt -a
+   $WEB_APOLLO_DIR/tools/user/set_track_permissions.pl -D $WEB_APOLLO_DB -U $WEB_APOLLO_DB_USER -P $WEB_APOLLO_DB_PASS -u web_apollo_admin -t /tmp/seqids.txt -a && \
+   $WEB_APOLLO_DIR/tools/user/set_track_permissions.pl -D $WEB_APOLLO_DB -U $WEB_APOLLO_DB_USER -P $WEB_APOLLO_DB_PASS -u rob -t /tmp/seqids.txt -a && \
+   $WEB_APOLLO_DIR/tools/user/set_track_permissions.pl -D $WEB_APOLLO_DB -U $WEB_APOLLO_DB_USER -P $WEB_APOLLO_DB_PASS -u james -t /tmp/seqids.txt -a && \
+   $WEB_APOLLO_DIR/tools/user/set_track_permissions.pl -D $WEB_APOLLO_DB -U $WEB_APOLLO_DB_USER -P $WEB_APOLLO_DB_PASS -u richard -t /tmp/seqids.txt -a
 
 RUN cp $WEB_APOLLO_DIR/tomcat/custom-valves.jar $TOMCAT_LIB_DIR
 
@@ -88,57 +91,13 @@ RUN mkdir -p $JBROWSE_DATA_DIR && \
    cd $TOMCAT_WEBAPPS_DIR/WebApollo/jbrowse && \
    chmod 755 bin/* && \
    ln -sf $JBROWSE_DATA_DIR data && \
-   bin/prepare-refseqs.pl --fasta $WEB_APOLLO_SAMPLE_DIR/pyu_data/scf1117875582023.fa && \
+   bin/prepare-refseqs.pl --fasta /tmp/refseqs.fasta && \
    bin/add-webapollo-plugin.pl -i data/trackList.json
 
 # Static data generation
 RUN mkdir -p $BLAT_TMP_DIR $BLAT_DATABASE_DIR && \
    cd $BLAT_DATABASE_DIR && \
-   faToTwoBit $WEB_APOLLO_SAMPLE_DIR/pyu_data/scf1117875582023.fa pyu.2bit
-
-RUN mkdir -p $WEB_APOLLO_SAMPLE_DIR/pyu_data/split_gff && \
-   $WEB_APOLLO_DIR/tools/data/split_gff_by_source.pl -i $WEB_APOLLO_SAMPLE_DIR/pyu_data/scf1117875582023.gff -d $WEB_APOLLO_SAMPLE_DIR/pyu_data/split_gff
-
-
-# Load gene/transcript/exon/CDS/polypeptide features
-RUN cd $TOMCAT_WEBAPPS_DIR/WebApollo/jbrowse && \
-   bin/flatfile-to-json.pl \
-   --gff $WEB_APOLLO_SAMPLE_DIR/pyu_data/split_gff/maker.gff \
-   --arrowheadClass trellis-arrowhead \
-   --getSubfeatures \
-   --subfeatureClasses '{"wholeCDS": null, "CDS":"brightgreen-80pct", "UTR": "darkgreen-60pct", "exon":"container-100pct"}' \
-   --cssClass container-16px --type mRNA --trackLabel maker
-
-
-# Load match/match_part features
-RUN cd $TOMCAT_WEBAPPS_DIR/WebApollo/jbrowse && \
-   bin/flatfile-to-json.pl \
-   --gff $WEB_APOLLO_SAMPLE_DIR/pyu_data/split_gff/blastn.gff \
-   --arrowheadClass webapollo-arrowhead --getSubfeatures \
-   --subfeatureClasses '{"match_part": "darkblue-80pct"}' \
-   --cssClass container-10px --trackLabel blastn
-
-RUN cd $TOMCAT_WEBAPPS_DIR/WebApollo/jbrowse && \
-   for i in $(ls $WEB_APOLLO_SAMPLE_DIR/pyu_data/split_gff/*.gff | grep -v maker); do \
-      echo $i \
-      j=$(basename $i .gff) \
-      echo "Processing $j" \
-      bin/flatfile-to-json.pl --gff $i --arrowheadClass webapollo-arrowhead --getSubfeatures --subfeatureClasses "{\"match_part\": \"darkblue-80pct\"}" --cssClass container-10px --trackLabel $j; \
-   done
-
-RUN cd $TOMCAT_WEBAPPS_DIR/WebApollo/jbrowse && \
-   bin/generate-names.pl
-
-RUN cd $TOMCAT_WEBAPPS_DIR/WebApollo/jbrowse && \
-   mkdir data/bam && \
-   cp $WEB_APOLLO_SAMPLE_DIR/pyu_data/*.bam* data/bam && \
-   bin/add-bam-track.pl --bam_url bam/simulated-sorted.bam --label simulated_bam --key "simulated BAM"
-
-RUN cd $TOMCAT_WEBAPPS_DIR/WebApollo/jbrowse && \
-   mkdir data/bigwig && \
-   cp $WEB_APOLLO_SAMPLE_DIR/pyu_data/*.bw data/bigwig && \
-   bin/add-bw-track.pl --bw_url bigwig/simulated-sorted.coverage.bw --label simulated_bw --key "simulated BigWig"
-
+   faToTwoBit /tmp/refseqs.fasta refseqs.2bit
 
 EXPOSE 8080
 ADD scripts/run.sh /usr/local/bin/run
