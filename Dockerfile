@@ -44,9 +44,9 @@ ENV WEB_APOLLO_DB web_apollo_users
 ENV WEB_APOLLO_DB_USER web_apollo_users_admin
 ENV WEB_APOLLO_DB_PASS AdminDatabasePassword
 
-RUN wget http://icebox.lbl.gov/webapollo/releases/previous_releases/WebApollo-2013-11-22.tgz && \
+RUN wget http://genomearchitect.org/webapollo/releases/WebApollo-2014-04-03.tgz && \
    tar -xzf WebApollo*.tgz -C /opt && \
-   mv /opt/WebApollo-2013-11-22 $WEB_APOLLO_DIR && \
+   mv /opt/WebApollo-2014-04-03 $WEB_APOLLO_DIR && \
    rm ./*.tgz
 
 ADD data/refseqs.fasta.gz /tmp/refseqs.fasta.gz
