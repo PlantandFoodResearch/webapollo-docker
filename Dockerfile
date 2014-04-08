@@ -17,16 +17,7 @@ RUN perl /tmp/install_cpanm.pl --sudo App::cpanminus && rm /tmp/install_cpanm.pl
 
 
 # Install perl WebApollo dependencies
-RUN apt-get install -qqy tomcat7 bioperl postgresql-9.1 vim tree tomcat7-admin
-RUN sed -i "s#</tomcat-users>##g" /etc/tomcat7/tomcat-users.xml; \
-    echo '  <role rolename="manager-gui"/>' >>  /etc/tomcat7/tomcat-users.xml; \
-    echo '  <role rolename="manager-script"/>' >>  /etc/tomcat7/tomcat-users.xml; \
-    echo '  <role rolename="manager-jmx"/>' >>  /etc/tomcat7/tomcat-users.xml; \
-    echo '  <role rolename="manager-status"/>' >>  /etc/tomcat7/tomcat-users.xml; \
-    echo '  <role rolename="admin-gui"/>' >>  /etc/tomcat7/tomcat-users.xml; \
-    echo '  <role rolename="admin-script"/>' >>  /etc/tomcat7/tomcat-users.xml; \
-    echo '  <user username="admin" password="admin" roles="manager-gui, manager-script, manager-jmx, manager-status, admin-gui, admin-script"/>' >>  /etc/tomcat7/tomcat-users.xml; \
-    echo '</tomcat-users>' >> /etc/tomcat7/tomcat-users.xml
+RUN apt-get install -qqy tomcat7 bioperl postgresql-9.1 vim tree
 RUN cpanm YAML JSON JSON::XS PerlIO::gzip Heap::Simple Heap::Simple::XS Hash::Merge Bio::GFF3::LowLevel::Parser Digest::Crc32 Cache::Ref::FIFO Devel::Size File::Next
 
 
@@ -54,7 +45,7 @@ ENV WEB_APOLLO_DB web_apollo_users
 ENV WEB_APOLLO_DB_USER web_apollo_users_admin
 ENV WEB_APOLLO_DB_PASS AdminDatabasePassword
 
-RUN echo "localhost:*:*:$WEB_APOLLO_DB_USER:$WEB_APOLLO_DB_PASS" > ~/.pgpass && chmod 600 ~/.pgpass
+#RUN echo "localhost:*:*:$WEB_APOLLO_DB_USER:$WEB_APOLLO_DB_PASS" > ~/.pgpass && chmod 600 ~/.pgpass
 RUN wget http://genomearchitect.org/webapollo/releases/WebApollo-2014-04-03.tgz && \
    tar -xzf WebApollo*.tgz -C /opt && \
    mv /opt/WebApollo-2014-04-03 $WEB_APOLLO_DIR && \
