@@ -27,7 +27,7 @@ RUN sed -i "s#</tomcat-users>##g" /etc/tomcat7/tomcat-users.xml; \
     echo '  <role rolename="admin-script"/>' >>  /etc/tomcat7/tomcat-users.xml; \
     echo '  <user username="admin" password="admin" roles="manager-gui, manager-script, manager-jmx, manager-status, admin-gui, admin-script"/>' >>  /etc/tomcat7/tomcat-users.xml; \
     echo '</tomcat-users>' >> /etc/tomcat7/tomcat-users.xml
-RUN cpanm YAML JSON JSON::XS PerlIO::gzip Heap::Simple Heap::Simple::XS Hash::Merge Bio::GFF3::LowLevel::Parser Digest::Crc32 Cache::Ref::FIFO Devel::Size
+RUN cpanm YAML JSON JSON::XS PerlIO::gzip Heap::Simple Heap::Simple::XS Hash::Merge Bio::GFF3::LowLevel::Parser Digest::Crc32 Cache::Ref::FIFO Devel::Size File::Next
 
 
 # Install blat
@@ -55,9 +55,9 @@ ENV WEB_APOLLO_DB_USER web_apollo_users_admin
 ENV WEB_APOLLO_DB_PASS AdminDatabasePassword
 
 RUN echo "localhost:*:*:$WEB_APOLLO_DB_USER:$WEB_APOLLO_DB_PASS" > ~/.pgpass && chmod 600 ~/.pgpass
-RUN wget http://icebox.lbl.gov/webapollo/releases/previous_releases/WebApollo-2013-11-22.tgz && \
+RUN wget http://genomearchitect.org/webapollo/releases/WebApollo-2014-04-03.tgz && \
    tar -xzf WebApollo*.tgz -C /opt && \
-   mv /opt/WebApollo-2013-11-22 $WEB_APOLLO_DIR && \
+   mv /opt/WebApollo-2014-04-03 $WEB_APOLLO_DIR && \
    rm ./*.tgz
 
 RUN mkdir $WEB_APOLLO_SAMPLE_DIR
