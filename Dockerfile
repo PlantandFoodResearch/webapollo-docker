@@ -12,7 +12,7 @@ RUN apt-get install -qqy libpng12-dev wget unzip build-essential zlib1g-dev libp
 
 
 # Install cpanm
-ADD install_cpanm.pl /tmp/
+ADD scripts/install_cpanm.pl /tmp/
 RUN perl /tmp/install_cpanm.pl --sudo App::cpanminus && rm /tmp/install_cpanm.pl
 
 
@@ -31,7 +31,7 @@ RUN cpanm YAML JSON JSON::XS PerlIO::gzip Heap::Simple Heap::Simple::XS Hash::Me
 
 
 # Install blat
-ADD install_blat.sh /tmp/
+ADD scripts/install_blat.sh /tmp/
 RUN bash /tmp/install_blat.sh && rm /tmp/install_blat.sh
 
 
@@ -150,6 +150,6 @@ RUN cd $TOMCAT_WEBAPPS_DIR/WebApollo/jbrowse && \
 
 
 EXPOSE 8080
-ADD ./run.sh /usr/local/bin/run
+ADD scripts/run.sh /usr/local/bin/run
 VOLUME ["/data/webapollo"]
 CMD ["/bin/sh", "-e", "/usr/local/bin/run"]
